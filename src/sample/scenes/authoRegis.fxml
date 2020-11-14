@@ -31,7 +31,7 @@
          </font>
       </Label>
       <TextField fx:id="login_auto" focusTraversable="false" layoutX="364.0" layoutY="97.0" prefHeight="35.0" prefWidth="190.0" promptText="Логин" styleClass="text-input" stylesheets="@../styles/style.css" />
-      <Button fx:id="btn_auto" layoutX="387.0" layoutY="221.0" mnemonicParsing="false" onAction="#openChange" prefHeight="25.0" prefWidth="145.0" stylesheets="@../styles/style.css" text="Вход" textFill="WHITE">
+      <Button fx:id="btn_auto" layoutX="387.0" layoutY="221.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="145.0" stylesheets="@../styles/style.css" text="Вход" textFill="WHITE">
          <font>
             <Font size="13.0" />
          </font>

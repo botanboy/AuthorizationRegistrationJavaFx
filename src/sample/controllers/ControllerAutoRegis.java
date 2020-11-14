@@ -1,21 +1,29 @@
 package sample.controllers;
 
 import java.awt.event.ActionEvent;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
 import java.math.BigInteger;
 import java.net.URL;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.ResourceBundle;
+
+import com.sun.glass.ui.EventLoop;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import sample.DB.DB_RegAuth;
+import sample.User;
 
 public class ControllerAutoRegis {
 
@@ -32,16 +40,13 @@ public class ControllerAutoRegis {
     private TextField email_reg;
 
     @FXML
-    private Button btn_reg;
+    private Button btn_reg, btn_auto;
 
     @FXML
     private PasswordField password_reg;
 
     @FXML
     public TextField login_auto;
-
-    @FXML
-    private Button btn_auto;
 
     @FXML
     private PasswordField password_auto;
@@ -55,7 +60,7 @@ public class ControllerAutoRegis {
             login_reg.setStyle("-fx-border-color: #fafafa");
             email_reg.setStyle("-fx-border-color: #fafafa");
             password_reg.setStyle("-fx-border-color: #fafafa");
-            btn_reg.setText("Изменить данные");
+            btn_reg.setText("Регистрация");
 
             if (login_reg.getCharacters().length() <= 3){
                 login_reg.setStyle("-fx-border-color: red");
@@ -81,6 +86,8 @@ public class ControllerAutoRegis {
                     email_reg.setText("");
                     password_reg.setText("");
                     btn_reg.setText("Готово");
+
+
                 } else {
                     btn_reg.setText("Пользователь существует");
                     login_reg.setStyle("-fx-border-color: red");
@@ -109,9 +116,20 @@ public class ControllerAutoRegis {
             try {
                 boolean isAuth = db.authUsers(login_auto.getCharacters().toString(), pass);
                 if (isAuth){
+                    FileOutputStream fos = new FileOutputStream("user.settings");
+                    ObjectOutputStream oos = new ObjectOutputStream(fos);
+
+                    oos.writeObject(new User(login_auto.getCharacters().toString()));
+                    oos.close();
+
                     login_auto.setText("");
                     password_auto.setText("");
-                    openChange(event);
+
+                    Parent root = FXMLLoader.load(getClass().getResource("/sample/scenes/article.fxml"));
+                    Stage primaryStage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+                    primaryStage.setTitle("Регистрация и Авторизация");
+                    primaryStage.setScene(new Scene(root, 600, 400));
+                    primaryStage.show();
                 } else {
                     btn_auto.setText("Пользователь not found");
                 }
@@ -147,17 +165,5 @@ public class ControllerAutoRegis {
         }
         return md5Hex;
     }
-
-    public void openChange(javafx.event.ActionEvent actionEvent) throws IOException {
-        FXMLLoader fxmlLoader = new FXMLLoader();
-        fxmlLoader.setLocation(getClass().getResource("/sample/scenes/changeUsers.fxml"));
-        Scene scene = new Scene(fxmlLoader.load(), 600, 400);
-        Stage stage = new Stage();
-        stage.setTitle("New Window");
-        stage.setScene(scene);
-        stage.show();
-    }
-
-
 }
 

@@ -14,7 +14,7 @@
     -fx-border-padding: 10 20;
 }
 .button:hover {
-    -fx-translate-y: -5;
+    -fx-translate-y: -1;
 }
 .button:pressed {
     -fx-background-color: #B04BA0;

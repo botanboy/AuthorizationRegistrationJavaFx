@@ -1,15 +1,22 @@
 package sample.controllers;
 
+import java.io.IOException;
 import java.math.BigInteger;
 import java.net.URL;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
+import java.util.Map;
 import java.util.ResourceBundle;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
+import javafx.stage.Stage;
 import sample.DB.DB_Change;
 
 public class ControllerChangeUsers {
@@ -27,75 +34,58 @@ public class ControllerChangeUsers {
     private TextField email_data;
 
     @FXML
-    private Button btn_data;
+    private Button btn_data, back;
 
     @FXML
     private PasswordField password_data;
 
     private DB_Change db = new DB_Change();
+    private ControllerAutoRegis auth = new ControllerAutoRegis();
+    private String userLogin;
 
 
     @FXML
-    void initialize() {
+    void initialize() throws SQLException, ClassNotFoundException {
+            Map<String, String> user = db.getUser("Admin");
+            login_data.setText(user.get("login"));
+            userLogin = user.get("login");
+            email_data.setText(user.get("email")); // Устанавливаем текст в поле с email
         btn_data.setOnAction(event -> {
-            login_data.setStyle("-fx-border-color: #fafafa");
-            email_data.setStyle("-fx-border-color: #fafafa");
-            password_data.setStyle("-fx-border-color: #fafafa");
-            btn_data.setText("Изменить данные");
+                String login = login_data.getCharacters().toString();
+                String email = email_data.getCharacters().toString();
 
-            if (login_data.getCharacters().length() <= 3) {
-                login_data.setStyle("-fx-border-color: red");
-                btn_data.setText("Короткий логин");
-                return;
-            } else if (email_data.getCharacters().length() <= 5) {
-                email_data.setStyle("-fx-border-color: red");
-                btn_data.setText("Email некоректен");
-                return;
-            } else if (password_data.getCharacters().length() <= 6) {
-                password_data.setStyle("-fx-border-color: red");
-                btn_data.setText("Пароль меньше 6");
-
-                return;
-            }
-            String pass = md5str(password_data.getCharacters().toString());
+            String pass = auth.md5str(password_data.getCharacters().toString());
 
             try {
-                  db.changeUsers(login_data.getCharacters().toString(),
-                          email_data.getCharacters().toString(), pass);
-                  login_data.setText("");
-                  email_data.setText("");
-                  password_data.setText("");
-                  btn_data.setText("Готово");
 
-            } catch (SQLException throwables) {
-                throwables.printStackTrace();
+                boolean updateUser = db.updateUser(login, email, pass, userLogin);
+                if(updateUser) {
+                    login_data.setText("");
+                    email_data.setText("");
+                    password_data.setText("");
+                    btn_data.setText("Готово");
+                } else
+                    btn_data.setText("Введите другой логин");
+            } catch (SQLException e) {
+                e.printStackTrace();
             } catch (ClassNotFoundException e) {
                 e.printStackTrace();
             }
 
         });
+        back.setOnAction(event -> {
+            Parent root = null;
+            try {
+                root = FXMLLoader.load(getClass().getResource("/sample/scenes/article.fxml"));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            Stage primaryStage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+            primaryStage.setTitle("Регистрация и Авторизация");
+            primaryStage.setScene(new Scene(root, 600, 400));
+            primaryStage.show();
+        });
 
-    }
-    public static String md5str (String password){
-        MessageDigest messageDigest = null;
-        byte[] digest = new byte[0];
-
-        try {
-            messageDigest = MessageDigest.getInstance("MD5");
-            messageDigest.reset();
-            messageDigest.update(password.getBytes());
-            digest = messageDigest.digest();
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        }
-
-        BigInteger bigInteger = new BigInteger(1, digest);
-        String md5Hex = bigInteger.toString(16);
-
-        while (md5Hex.length() < 32){
-            md5Hex = "0" + md5Hex;
-        }
-        return md5Hex;
     }
 
 }
